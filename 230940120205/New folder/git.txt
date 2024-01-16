@@ -1,0 +1,7 @@
+git config   --global   user.name   “Atul Kahate”
+git config   --global   user.email    “newdelthis@gmail.com”
+
+
+git branch -M main
+git remote add origin https://github.com/newdelthis/hello-from-git.git
+git push -u origin main

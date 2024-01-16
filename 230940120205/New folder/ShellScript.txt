@@ -1,0 +1,15 @@
+#!/bin/bash
+read -p "Enter Sales amount: " sales
+
+read -p "Enter Cost amount: " cost
+
+profit=$(echo "$sales - $cost" | bc)
+
+taxes=$(echo "scale=2; $profit * 0.1" | bc)
+net_profit=$(echo "scale=2; $profit - $taxes" | bc)
+
+echo "Sales: $sales"
+echo "Cost: $cost"
+echo "Profit: $profit"
+echo "Taxes (10%): $taxes"
+echo "Net Profit: $net_profit"

@@ -1,0 +1,4 @@
+sudo adduser cdac
+
+sudo deluser cdac
+

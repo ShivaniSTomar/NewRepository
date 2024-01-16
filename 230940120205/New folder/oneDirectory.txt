@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Create directory 'one' and two files inside it
+
+mkdir -p one
+touch one/file1 one/file2
+
+# Create directory 'two' inside 'one' and two files inside it
+
+mkdir -p one/two
+touch one/two/file3 one/two/file4
+
+# Create directory 'three' inside 'two' and two files inside it
+
+mkdir -p one/two/three
+touch one/two/three/file5 one/two/three/file6
+
+# Display the directory structure
+
+echo "Directory structure before removal:"
+find one
+
+# Go to directory 'one' and remove everything under it
+
+cd one
+rm -r *
+
+# Display the directory structure after removal
+
+echo -e "\nDirectory structure after removal:"
+find .
