@@ -1,0 +1,168 @@
+==========================================================================
+1.Entities:
+==========================================================================
+// Course.java
+@Entity
+public class Course {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String title;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private BigDecimal fees;
+    private int minScore;
+    // getters and setters
+}
+==========================================================================
+// Student.java
+@Entity
+public class Student {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private int score;
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+    // getters and setters
+}
+==========================================================================
+2.Repository(DAO):
+==========================================================================
+// CourseRepository.java
+public interface CourseRepository extends JpaRepository<Course, Long> {
+}
+==========================================================================
+// StudentRepository.java
+public interface StudentRepository extends JpaRepository<Student, Long> {
+    List<Student> findByCourse_Title(String title);
+}
+==========================================================================
+3.Service:
+==========================================================================
+// CourseService.java
+public interface CourseService {
+    String launchCourse(Course course);
+    String updateCourseFees(Long courseId, BigDecimal fees);
+}
+==========================================================================
+// StudentService.java
+public interface StudentService {
+    String addStudent(Student student);
+    String cancelAdmission(Long courseId, Long studentId);
+    List<Student> getStudentsByCourseTitle(String title);
+}
+==========================================================================
+4.Service Implementation:
+==========================================================================
+// CourseServiceImpl.java
+@Service
+public class CourseServiceImpl implements CourseService {
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Override
+    public String launchCourse(Course course) {
+        courseRepository.save(course);
+        return "Course launched successfully!";
+    }
+
+    @Override
+    public String updateCourseFees(Long courseId, BigDecimal fees) {
+        Optional<Course> optionalCourse = courseRepository.findById(courseId);
+        if (optionalCourse.isPresent()) {
+            Course course = optionalCourse.get();
+            course.setFees(fees);
+            courseRepository.save(course);
+            return "Course fees updated successfully!";
+        } else {
+            return "Course not found!";
+        }
+    }
+}
+==========================================================================
+// StudentServiceImpl.java
+@Service
+public class StudentServiceImpl implements StudentService {
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @Override
+    public String addStudent(Student student) {
+        if (student.getScore() >= student.getCourse().getMinScore()) {
+            studentRepository.save(student);
+            return "Student admitted successfully!";
+        } else {
+            return "Admission not granted. Insufficient score!";
+        }
+    }
+
+    @Override
+    public String cancelAdmission(Long courseId, Long studentId) {
+        Optional<Student> optionalStudent = studentRepository.findById(studentId);
+        if (optionalStudent.isPresent()) {
+            Student student = optionalStudent.get();
+            if (student.getCourse().getId().equals(courseId)) {
+                studentRepository.delete(student);
+                return "Admission cancelled successfully!";
+            } else {
+                return "Student not enrolled in the specified course!";
+            }
+        } else {
+            return "Student not found!";
+        }
+    }
+
+    @Override
+    public List<Student> getStudentsByCourseTitle(String title) {
+        return studentRepository.findByCourse_Title(title);
+    }
+}
+==========================================================================
+5.Controller:
+==========================================================================
+// CourseController.java
+@RestController
+@RequestMapping("/courses")
+public class CourseController {
+    @Autowired
+    private CourseService courseService;
+
+    @PostMapping
+    public String launchCourse(@RequestBody Course course) {
+        return courseService.launchCourse(course);
+    }
+
+    @PutMapping("/{courseId}/fees/{fees}")
+    public String updateCourseFees(@PathVariable Long courseId, @PathVariable BigDecimal fees) {
+        return courseService.updateCourseFees(courseId, fees);
+    }
+}
+==========================================================================
+// StudentController.java
+@RestController
+@RequestMapping("/students")
+public class StudentController {
+    @Autowired
+    private StudentService studentService;
+
+    @PostMapping
+    public String addStudent(@RequestBody Student student) {
+        return studentService.addStudent(student);
+    }
+
+    @DeleteMapping("/{courseId}/students/{studentId}")
+    public String cancelAdmission(@PathVariable Long courseId, @PathVariable Long studentId) {
+        return studentService.cancelAdmission(courseId, studentId);
+    }
+
+    @GetMapping("/course_title/{title}")
+    public List<Student> getStudentsByCourseTitle(@PathVariable String title) {
+        return studentService.getStudentsByCourseTitle(title);
+    }
+}
+==========================================================================

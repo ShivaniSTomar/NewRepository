@@ -1,0 +1,166 @@
+===================================================================================
+1.User Entity:
+===================================================================================
+// User.java
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String username;
+    // other user attributes, if needed
+    // getters and setters
+}
+===================================================================================
+2.Movie Entity:
+===================================================================================
+// Movie.java
+@Entity
+public class Movie {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+    // other movie attributes, if needed
+    // getters and setters
+}
+===================================================================================
+3.Review Entity:
+===================================================================================
+// Review.java
+@Entity
+public class Review {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = "Review contents cannot be blank")
+    private String reviewContents;
+
+    @Min(value = 1, message = "Rating should be at least 1")
+    @Max(value = 5, message = "Rating should be at most 5")
+    private int rating;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "movie_id")
+    private Movie movie;
+
+    // getters and setters
+}
+===================================================================================
+4.Review Repository (DAO):
+===================================================================================
+// ReviewRepository.java
+public interface ReviewRepository extends JpaRepository<Review, Long> {
+}
+===================================================================================
+5.Review Service:
+===================================================================================
+// ReviewService.java
+public interface ReviewService {
+    ResponseEntity<Object> getAllReviews();
+    ResponseEntity<Object> getReviewById(Long reviewId);
+    ResponseEntity<Object> addReview(ReviewDTO reviewDTO);
+    ResponseEntity<Object> updateReview(Long reviewId, ReviewDTO updatedReviewDTO);
+    ResponseEntity<Object> deleteReview(Long reviewId);
+}
+===================================================================================
+6.Review Service Implementation:
+===================================================================================
+// ReviewServiceImpl.java
+@Service
+public class ReviewServiceImpl implements ReviewService {
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Override
+    public ResponseEntity<Object> getAllReviews() {
+        List<Review> reviews = reviewRepository.findAll();
+        return ResponseEntity.ok(reviews);
+    }
+
+    @Override
+    public ResponseEntity<Object> getReviewById(Long reviewId) {
+        Optional<Review> review = reviewRepository.findById(reviewId);
+        return review.map(value -> ResponseEntity.ok(value))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Review not found"));
+    }
+
+    @Override
+    public ResponseEntity<Object> addReview(ReviewDTO reviewDTO) {
+        // Perform validation and mapping from DTO to entity
+        // Save the review entity
+        // Return the saved review with a suitable response code
+        // Handle exceptions appropriately
+    }
+
+    @Override
+    public ResponseEntity<Object> updateReview(Long reviewId, ReviewDTO updatedReviewDTO) {
+        // Perform validation and mapping from DTO to entity
+        // Check if the review with the given ID exists
+        // Update the review entity
+        // Return the updated review with a suitable response code
+        // Handle exceptions appropriately
+    }
+
+    @Override
+    public ResponseEntity<Object> deleteReview(Long reviewId) {
+        // Check if the review with the given ID exists
+        // Delete the review entity
+        // Return confirmation with a suitable response code
+        // Handle exceptions appropriately
+    }
+}
+===================================================================================
+7.Review Controller:
+===================================================================================
+// ReviewController.java
+@RestController
+@RequestMapping("/reviews")
+public class ReviewController {
+    @Autowired
+    private ReviewService reviewService;
+
+    @GetMapping
+    public ResponseEntity<Object> getAllReviews() {
+        return reviewService.getAllReviews();
+    }
+
+    @GetMapping("/{reviewId}")
+    public ResponseEntity<Object> getReviewById(@PathVariable Long reviewId) {
+        return reviewService.getReviewById(reviewId);
+    }
+
+    @PostMapping
+    public ResponseEntity<Object> addReview(@RequestBody ReviewDTO reviewDTO) {
+        return reviewService.addReview(reviewDTO);
+    }
+
+    @PutMapping("/{reviewId}")
+    public ResponseEntity<Object> updateReview(@PathVariable Long reviewId, @RequestBody ReviewDTO updatedReviewDTO) {
+        return reviewService.updateReview(reviewId, updatedReviewDTO);
+    }
+
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<Object> deleteReview(@PathVariable Long reviewId) {
+        return reviewService.deleteReview(reviewId);
+    }
+}
+===================================================================================
+8.Review DTO:
+===================================================================================
+// ReviewDTO.java
+public class ReviewDTO {
+    private String reviewContents;
+    private int rating;
+    private Long userId;
+    private Long movieId;
+    // getters and setters
+}
+===================================================================================
